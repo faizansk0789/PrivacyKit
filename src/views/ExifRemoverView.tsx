@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ImageMinus,
   Download,
@@ -16,7 +16,8 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
-  ExternalLink
+  ExternalLink,
+  ShieldAlert
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Dropzone } from '../components/common/Dropzone';
@@ -25,6 +26,7 @@ import { ScoreMeter } from '../components/common/ScoreMeter';
 import { parseImageMetadata, stripImageMetadata } from '../utils/exifEngine';
 import { ImageExifData } from '../types';
 import { logActivity } from '../utils/storage';
+import { playPop, playHover, playSuccess } from '../utils/soundEngine';
 
 interface ExifRemoverViewProps {
   onNavigate: (path: string) => void;
@@ -35,6 +37,7 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
   const [exifData, setExifData] = useState<ImageExifData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
+  const downloadSectionRef = useRef<HTMLDivElement | null>(null);
 
   // Inspector collapse states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -91,9 +94,19 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
     }
   };
 
+  const needsCleaning = Boolean(
+    exifData && (
+      (exifData.risks && exifData.risks.some((r) => r.risk !== 'safe')) ||
+      exifData.hasGps ||
+      exifData.privacyScore < 100 ||
+      (exifData.rawTags && Object.keys(exifData.rawTags).length > 0)
+    )
+  );
+
   const handleProcessClean = async () => {
     if (!file) return;
     setIsCleaning(true);
+    playPop();
 
     try {
       const res = await stripImageMetadata(file, {
@@ -111,15 +124,26 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
       setIsDone(true);
       setActiveTab('cleaner');
 
+      // Play pop and celebration sounds
+      playPop();
+      setTimeout(() => playSuccess(), 120);
+
       // Trigger confetti
       try {
         confetti({
-          particleCount: 45,
-          spread: 60,
-          origin: { y: 0.7 },
-          colors: ['#10B981', '#6366F1'],
+          particleCount: 50,
+          spread: 70,
+          origin: { y: 0.65 },
+          colors: ['#10B981', '#6366F1', '#3B82F6'],
         });
       } catch (e) {}
+
+      // Automatically redirect/scroll smoothly to the download media sign
+      setTimeout(() => {
+        if (downloadSectionRef.current) {
+          downloadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
 
       logActivity({
         toolId: 'exif-remover',
@@ -234,29 +258,59 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
 
           {/* Navigation Tabs */}
           {!isDone && (
-            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
-              <button
-                onClick={() => setActiveTab('inspector')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'inspector'
-                    ? 'clay-pill-active text-white'
-                    : 'clay-pill-inactive text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <Eye className="w-4 h-4" />
-                <span>Metadata Inspector</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('cleaner')}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
-                  activeTab === 'cleaner'
-                    ? 'clay-pill-active text-white'
-                    : 'clay-pill-inactive text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <ImageMinus className="w-4 h-4" />
-                <span>Sanitize & Clean</span>
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    playPop();
+                    setActiveTab('inspector');
+                  }}
+                  onMouseEnter={playHover}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    activeTab === 'inspector'
+                      ? 'clay-pill-active text-white'
+                      : 'clay-pill-inactive text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>Metadata Inspector</span>
+                </button>
+                <button
+                  onClick={() => {
+                    playPop();
+                    setActiveTab('cleaner');
+                  }}
+                  onMouseEnter={playHover}
+                  className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                    activeTab === 'cleaner'
+                      ? 'clay-pill-active text-white'
+                      : needsCleaning
+                        ? 'clay-pill-active text-white sanitize-attention-glow'
+                        : 'clay-pill-inactive text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <ImageMinus className="w-4 h-4" />
+                  <span>Sanitize & Clean</span>
+                  {needsCleaning && (
+                    <span className="w-2 h-2 rounded-full bg-rose-300 dark:bg-rose-400 animate-ping ml-0.5" />
+                  )}
+                </button>
+              </div>
+
+              {/* Status pill showing if safe or requires metadata removal */}
+              <div>
+                {!needsCleaning ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold shadow-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span>Metadata Safe & Clean</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold shadow-xs">
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                    <span>Action Required: Metadata Detected</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -645,7 +699,12 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
                   type="button"
                   onClick={handleProcessClean}
                   disabled={isCleaning}
-                  className="w-full py-3.5 rounded-full clay-button-pro font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                  onMouseEnter={playHover}
+                  className={`w-full py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer transition-all ${
+                    needsCleaning
+                      ? 'clay-button-pro sanitize-attention-glow text-white'
+                      : 'clay-button-pro'
+                  }`}
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{isCleaning ? 'Cleaning Image...' : 'Strip Selected Metadata'}</span>
@@ -654,30 +713,44 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
             </div>
           )}
 
-          {/* Success Box after Cleaning */}
+          {/* Success Box after Cleaning with Download Media Sign */}
           {isDone && (
-            <div className="p-6 sm:p-8 rounded-3xl bg-emerald-500/10 border border-emerald-500/25 space-y-5 animate-fadeIn">
+            <div 
+              ref={downloadSectionRef}
+              id="download-media-sign"
+              className="p-6 sm:p-8 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/40 space-y-5 animate-fadeIn shadow-lg shadow-emerald-500/10 scroll-mt-28"
+            >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                    <CheckCircle2 className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                    <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                      Sanitized Image Ready for Download
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                        Sanitization Complete
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+                      Sanitized Media Ready for Download
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400">
-                      All selected metadata headers have been completely expunged.
+                      All selected metadata headers have been completely expunged. Visual quality is 100% preserved.
                     </p>
                   </div>
                 </div>
 
+                {/* Download image or media sign */}
                 <button
                   type="button"
-                  onClick={handleDownload}
-                  className="px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 active:scale-[0.98] shrink-0 cursor-pointer"
+                  onClick={() => {
+                    playPop();
+                    handleDownload();
+                  }}
+                  onMouseEnter={playHover}
+                  className="px-6 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-600/35 flex items-center justify-center gap-2.5 active:scale-[0.98] shrink-0 cursor-pointer animate-pulse hover:animate-none"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-5 h-5" />
                   <span>Download Clean Image</span>
                 </button>
               </div>

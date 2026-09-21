@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ShieldAlert,
   FileCheck2,
@@ -54,6 +54,14 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
   const [cleanedFileName, setCleanedFileName] = useState<string>('');
   const [isCleaning, setIsCleaning] = useState(false);
   const [cleanedItemsList, setCleanedItemsList] = useState<string[]>([]);
+  const downloadSectionRef = useRef<HTMLDivElement>(null);
+
+  const needsCleaning = Boolean(
+    report && !report.isCleaned && report.type !== 'url' && (
+      report.originalScore < 100 ||
+      report.risks.some(r => r.risk !== 'safe')
+    )
+  );
 
   const stages = [
     'Reading file stream in browser memory...',
@@ -176,6 +184,15 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
       };
 
       setReport(updatedReport);
+      playPop();
+      setTimeout(() => playSuccess(), 120);
+
+      // Auto scroll to download section
+      setTimeout(() => {
+        if (downloadSectionRef.current) {
+          downloadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
 
       // Trigger celebration confetti
       try {
@@ -499,7 +516,11 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
                   onClick={handleCleanCurrentFile}
                   disabled={isCleaning}
                   onMouseEnter={playHover}
-                  className="px-5 py-2.5 rounded-full clay-button-pro font-bold text-xs flex items-center gap-2 active:scale-[0.98] cursor-pointer"
+                  className={`px-5 py-2.5 rounded-full font-bold text-xs flex items-center gap-2 active:scale-[0.98] cursor-pointer transition-all ${
+                    needsCleaning
+                      ? 'clay-button-pro sanitize-attention-glow text-white'
+                      : 'clay-button-pro'
+                  }`}
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{isCleaning ? 'Sanitizing in Memory...' : 'Remove Privacy Risks'}</span>
@@ -511,7 +532,7 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
                   type="button"
                   onClick={handleDownloadCleanFile}
                   onMouseEnter={playHover}
-                  className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center gap-2 active:scale-[0.98] cursor-pointer"
+                  className="px-5 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center gap-2 active:scale-[0.98] cursor-pointer animate-pulse hover:animate-none"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Clean File</span>
@@ -562,7 +583,11 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
 
           {/* Before & After Cleaning Comparison Card */}
           {report.isCleaned && (
-            <div className="p-6 rounded-3xl bg-emerald-500/10 border border-emerald-500/25 space-y-4 animate-fadeIn">
+            <div 
+              ref={downloadSectionRef}
+              id="download-checkup-sign"
+              className="p-6 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/40 space-y-4 animate-fadeIn shadow-lg shadow-emerald-500/10 scroll-mt-28"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-sm">
                   <CheckCircle2 className="w-5 h-5" />
@@ -589,7 +614,7 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
                   <button
                     onClick={handleDownloadCleanFile}
                     onMouseEnter={playHover}
-                    className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-md shadow-emerald-600/30 flex items-center gap-2 cursor-pointer"
+                    className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-600/35 flex items-center gap-2 cursor-pointer animate-pulse hover:animate-none"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download Clean File ({cleanedFileName})</span>

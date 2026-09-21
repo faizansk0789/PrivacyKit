@@ -113,37 +113,15 @@ export default function App() {
 
   const toggleTheme = () => {
     playPop();
-    // Enable seamless global color & shadow morphing across all DOM elements
-    document.documentElement.classList.add('theme-transition');
-
-    const applyTheme = (nextDark: boolean) => {
-      if (nextDark) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('privacykit_theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('privacykit_theme', 'light');
-      }
-      setIsDark(nextDark);
-    };
-
-    const nextValue = !isDark;
-
-    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
-      try {
-        (document as any).startViewTransition(() => {
-          applyTheme(nextValue);
-        });
-      } catch (err) {
-        applyTheme(nextValue);
-      }
+    const nextDark = !isDark;
+    if (nextDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('privacykit_theme', 'dark');
     } else {
-      applyTheme(nextValue);
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('privacykit_theme', 'light');
     }
-
-    window.setTimeout(() => {
-      document.documentElement.classList.remove('theme-transition');
-    }, 450);
+    setIsDark(nextDark);
   };
 
   // Return view node based on route
@@ -184,7 +162,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-clip bg-[#EBF0F5] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-950 dark:selection:text-indigo-200 relative transition-colors duration-400">
+    <div className="min-h-screen w-full max-w-full overflow-x-clip bg-[#EBF0F5] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-950 dark:selection:text-indigo-200 relative transition-colors duration-150">
       {/* Dynamic Route Progress Indicator */}
       <PageProgressBar currentPath={currentPath} />
 

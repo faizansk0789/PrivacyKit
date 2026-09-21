@@ -44,6 +44,11 @@ export const VideoCleanerView: React.FC<VideoCleanerViewProps> = ({ onNavigate }
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const downloadSectionRef = useRef<HTMLDivElement>(null);
+
+  const needsCleaning = Boolean(
+    metadata && (metadata.hasUdta || metadata.hasMeta || Boolean(metadata.creationTime))
+  );
 
   const processFile = async (selectedFile: File) => {
     setFile(selectedFile);
@@ -100,7 +105,15 @@ export const VideoCleanerView: React.FC<VideoCleanerViewProps> = ({ onNavigate }
         scrubDates
       });
       setCleanFile(cleanedBlob);
-      playSuccess();
+      playPop();
+      setTimeout(() => playSuccess(), 120);
+
+      // Auto redirect/scroll smoothly to the download sign
+      setTimeout(() => {
+        if (downloadSectionRef.current) {
+          downloadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
 
       const itemsRemoved = [removeUdta, removeMeta, scrubDates].filter(Boolean).length;
       
@@ -209,37 +222,58 @@ export const VideoCleanerView: React.FC<VideoCleanerViewProps> = ({ onNavigate }
           {!cleanFile ? (
             <div className="space-y-6 animate-fadeIn">
               {/* Tabs */}
-              <div className="flex items-center gap-2 p-1.5 rounded-full clay-inset-card w-fit">
-                <button
-                  onClick={() => {
-                    playPop();
-                    setActiveTab('inspector');
-                  }}
-                  onMouseEnter={playHover}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                    activeTab === 'inspector'
-                      ? 'clay-pill-active'
-                      : 'clay-pill-inactive'
-                  }`}
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Inspector</span>
-                </button>
-                <button
-                  onClick={() => {
-                    playPop();
-                    setActiveTab('cleaner');
-                  }}
-                  onMouseEnter={playHover}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                    activeTab === 'cleaner'
-                      ? 'clay-pill-active'
-                      : 'clay-pill-inactive'
-                  }`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Sanitize</span>
-                </button>
+              <div className="flex flex-wrap items-center justify-between gap-3 p-1.5 rounded-3xl clay-inset-card">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      playPop();
+                      setActiveTab('inspector');
+                    }}
+                    onMouseEnter={playHover}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                      activeTab === 'inspector'
+                        ? 'clay-pill-active'
+                        : 'clay-pill-inactive'
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Inspector</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      playPop();
+                      setActiveTab('cleaner');
+                    }}
+                    onMouseEnter={playHover}
+                    className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                      activeTab === 'cleaner'
+                        ? 'clay-pill-active'
+                        : needsCleaning
+                          ? 'clay-pill-active sanitize-attention-glow'
+                          : 'clay-pill-inactive'
+                    }`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Sanitize & Clean</span>
+                    {needsCleaning && (
+                      <span className="w-2 h-2 rounded-full bg-rose-300 dark:bg-rose-400 animate-ping ml-0.5" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="px-2">
+                  {!needsCleaning ? (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Video Safe: No Risky Metadata</span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold">
+                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                      <span>Action Required: Metadata Detected</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {activeTab === 'inspector' && metadata && (
@@ -350,14 +384,18 @@ export const VideoCleanerView: React.FC<VideoCleanerViewProps> = ({ onNavigate }
                       onClick={handleClean}
                       disabled={isProcessing || (!removeUdta && !removeMeta && !scrubDates)}
                       onMouseEnter={playHover}
-                      className="w-full py-3.5 rounded-full clay-button-pro disabled:opacity-50 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                      className={`w-full py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                        needsCleaning
+                          ? 'clay-button-pro sanitize-attention-glow text-white'
+                          : 'clay-button-pro disabled:opacity-50'
+                      }`}
                     >
                       {isProcessing ? (
                         <span className="animate-pulse">Cleaning Video...</span>
                       ) : (
                         <>
                           <Trash2 className="w-4 h-4" />
-                          <span>Sanitize & Clean</span>
+                          <span>Sanitize & Clean Video</span>
                         </>
                       )}
                     </button>
@@ -367,25 +405,32 @@ export const VideoCleanerView: React.FC<VideoCleanerViewProps> = ({ onNavigate }
             </div>
           ) : (
             <motion.div
+              ref={downloadSectionRef}
+              id="download-video-sign"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="p-6 sm:p-8 rounded-3xl bg-emerald-500/10 border border-emerald-500/25 space-y-5"
+              className="p-6 sm:p-8 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/40 space-y-5 shadow-lg shadow-emerald-500/10 scroll-mt-28"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                    <CheckCircle2 className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                    <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Successfully Cleaned</h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">Metadata safely overwritten. File size unchanged.</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                        Sanitization Complete
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">Video Successfully Sanitized</h3>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">All chosen metadata tags safely overwritten. Video stream untouched.</p>
                   </div>
                 </div>
 
                 <button
                   onClick={handleDownload}
                   onMouseEnter={playHover}
-                  className="px-6 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                  className="px-6 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 animate-pulse hover:animate-none"
                 >
                   <Save className="w-4 h-4" />
                   <span>Download Clean Video</span>

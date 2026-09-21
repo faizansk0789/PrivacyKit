@@ -35,6 +35,11 @@ export const AudioCleanerView: React.FC<AudioCleanerViewProps> = ({ onNavigate }
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const downloadSectionRef = useRef<HTMLDivElement>(null);
+
+  const needsCleaning = Boolean(
+    metadata && (metadata.hasId3v2 || metadata.hasId3v1)
+  );
 
   const processFile = async (selectedFile: File) => {
     setFile(selectedFile);
@@ -89,7 +94,15 @@ export const AudioCleanerView: React.FC<AudioCleanerViewProps> = ({ onNavigate }
         removeId3v1
       });
       setCleanFile(cleanedBlob);
-      playSuccess();
+      playPop();
+      setTimeout(() => playSuccess(), 120);
+
+      // Auto scroll to download sign
+      setTimeout(() => {
+        if (downloadSectionRef.current) {
+          downloadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to sanitize audio metadata.');
       playError();
@@ -281,7 +294,11 @@ export const AudioCleanerView: React.FC<AudioCleanerViewProps> = ({ onNavigate }
                     onClick={handleClean}
                     disabled={isProcessing || (!metadata?.hasId3v2 && !metadata?.hasId3v1) || (!removeId3v1 && !removeId3v2)}
                     onMouseEnter={playHover}
-                    className="w-full py-3.5 rounded-full clay-button-pro disabled:opacity-50 font-bold text-sm flex items-center justify-center gap-2 cursor-pointer"
+                    className={`w-full py-3.5 rounded-full font-bold text-sm flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                      needsCleaning
+                        ? 'clay-button-pro sanitize-attention-glow text-white'
+                        : 'clay-button-pro disabled:opacity-50'
+                    }`}
                   >
                     {isProcessing ? (
                       <span className="animate-pulse">Cleaning...</span>
@@ -296,24 +313,31 @@ export const AudioCleanerView: React.FC<AudioCleanerViewProps> = ({ onNavigate }
               </div>
             ) : (
               <motion.div
+                ref={downloadSectionRef}
+                id="download-audio-sign"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="p-6 sm:p-7 rounded-3xl bg-emerald-500/10 border border-emerald-500/25 space-y-4"
+                className="p-6 sm:p-7 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/40 space-y-4 shadow-lg shadow-emerald-500/10 scroll-mt-28"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5" />
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                    <CheckCircle2 className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Successfully Cleaned</h3>
-                    <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80">Metadata removed. Ready to download.</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                        Sanitization Complete
+                      </span>
+                    </div>
+                    <h3 className="text-base font-bold text-emerald-800 dark:text-emerald-300 mt-0.5">Audio Successfully Cleaned</h3>
+                    <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80">All ID3 metadata tags removed. Ready for download.</p>
                   </div>
                 </div>
 
                 <button
                   onClick={handleDownload}
                   onMouseEnter={playHover}
-                  className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/35 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse hover:animate-none"
                 >
                   <Save className="w-4 h-4" />
                   <span>Download Clean MP3</span>

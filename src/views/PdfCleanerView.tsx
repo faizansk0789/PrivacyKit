@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   FileText,
   Download,
@@ -36,6 +36,19 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
   const [cleanedFileName, setCleanedFileName] = useState('');
   const [strippedItems, setStrippedItems] = useState<string[]>([]);
   const [isDone, setIsDone] = useState(false);
+  const downloadSectionRef = useRef<HTMLDivElement>(null);
+
+  const needsCleaning = Boolean(
+    pdfData && (
+      Boolean(pdfData.author) ||
+      Boolean(pdfData.title) ||
+      Boolean(pdfData.creator) ||
+      Boolean(pdfData.producer) ||
+      Boolean(pdfData.creationDate) ||
+      Boolean(pdfData.modificationDate) ||
+      pdfData.privacyScore < 100
+    )
+  );
 
   const handleFileSelected = async (selectedFile: File) => {
     setFile(selectedFile);
@@ -63,6 +76,7 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
   const handleCleanPdf = async () => {
     if (!file) return;
     setIsCleaning(true);
+    playPop();
 
     try {
       const res = await stripPdfMetadata(file);
@@ -70,13 +84,21 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
       setCleanedFileName(res.fileName);
       setStrippedItems(res.strippedItems);
       setIsDone(true);
-      playSuccess();
+      playPop();
+      setTimeout(() => playSuccess(), 120);
+
+      // Auto scroll to download sign
+      setTimeout(() => {
+        if (downloadSectionRef.current) {
+          downloadSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 150);
 
       try {
         confetti({
-          particleCount: 45,
-          spread: 60,
-          origin: { y: 0.7 },
+          particleCount: 50,
+          spread: 70,
+          origin: { y: 0.65 },
           colors: ['#10B981', '#6366F1'],
         });
       } catch (e) {}
@@ -189,16 +211,25 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
             </div>
           </div>
 
-          {/* Success Banner */}
+          {/* Success Banner / Download Sign */}
           {isDone && (
-            <div className="p-6 sm:p-8 rounded-3xl bg-emerald-500/10 border border-emerald-500/25 space-y-5 animate-fadeIn">
+            <div 
+              ref={downloadSectionRef}
+              id="download-pdf-sign"
+              className="p-6 sm:p-8 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/40 space-y-5 animate-fadeIn shadow-lg shadow-emerald-500/10 scroll-mt-28"
+            >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30">
-                    <CheckCircle2 className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                    <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-700 dark:text-emerald-300">
+                        Sanitization Complete
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
                       Cleaned PDF Ready for Download
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -211,9 +242,9 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
                   type="button"
                   onClick={handleDownload}
                   onMouseEnter={playHover}
-                  className="px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 active:scale-[0.98] shrink-0 cursor-pointer"
+                  className="px-6 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-600/35 flex items-center justify-center gap-2 active:scale-[0.98] shrink-0 cursor-pointer animate-pulse hover:animate-none"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-5 h-5" />
                   <span>Download Clean PDF</span>
                 </button>
               </div>
@@ -297,7 +328,11 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
                 onClick={handleCleanPdf}
                 disabled={isCleaning}
                 onMouseEnter={playHover}
-                className="w-full sm:w-auto px-7 py-3 rounded-full clay-button-pro font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+                className={`w-full sm:w-auto px-7 py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer transition-all ${
+                  needsCleaning
+                    ? 'clay-button-pro sanitize-attention-glow text-white'
+                    : 'clay-button-pro'
+                }`}
               >
                 <Sparkles className="w-4 h-4" />
                 <span>{isCleaning ? 'Sanitizing PDF...' : 'Sanitize & Download Clean PDF'}</span>
