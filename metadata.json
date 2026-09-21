@@ -1,0 +1,6 @@
+{
+  "name": "PrivacyKit",
+  "description": "Premium browser-first privacy toolkit to scan, clean, and protect digital files and URLs without uploading to servers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
