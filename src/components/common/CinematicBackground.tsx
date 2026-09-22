@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 
 export const CinematicBackground: React.FC = () => {
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10 bg-gradient-to-b from-[#F8FAFC] via-[#F1F5F9] to-[#E2E8F0]/70 dark:from-[#0B0F19] dark:via-[#0F1626] dark:to-[#0B0F19] transition-colors duration-150">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10 bg-gradient-to-b from-[#EBF0F5] via-[#E2E8F0] to-[#D9E2EC] dark:from-[#0B0F19] dark:via-[#0F1626] dark:to-[#0B0F19] transition-colors duration-150">
       {/* Top Ambient Bloom */}
       <div 
         className="absolute inset-0 pointer-events-none opacity-60 dark:opacity-40 transition-opacity duration-150"

@@ -7,15 +7,17 @@ import {
   Globe,
   Anchor,
   Sparkles,
-  FileText
+  FileText,
+  MessageSquarePlus
 } from 'lucide-react';
 import { playPop } from '../../utils/soundEngine';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
+  onOpenFeedback?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFeedback }) => {
   return (
     <footer className="w-full clay-footer-plate p-8 sm:p-12 mt-20 text-slate-700 dark:text-slate-300">
       <div className="max-w-6xl mx-auto">
@@ -154,6 +156,20 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   Cookie Policy
                 </button>
               </li>
+              {onOpenFeedback && (
+                <li>
+                  <button
+                    onClick={() => {
+                      playPop();
+                      onOpenFeedback();
+                    }}
+                    className="inline-flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold transition-colors text-left cursor-pointer"
+                  >
+                    <MessageSquarePlus className="w-3.5 h-3.5" />
+                    <span>Send Feedback</span>
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -213,6 +229,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             >
               Security Architecture
             </button>
+            {onOpenFeedback && (
+              <button
+                onClick={() => { playPop(); onOpenFeedback(); }}
+                className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1.5 font-medium cursor-pointer"
+              >
+                <MessageSquarePlus className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Send Feedback</span>
+              </button>
+            )}
             <button
               onClick={() => { playPop(); onNavigate('/learn?article=exif-metadata'); }}
               className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1 cursor-pointer"

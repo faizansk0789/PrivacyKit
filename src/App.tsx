@@ -7,6 +7,7 @@ import { CinematicBackground } from './components/common/CinematicBackground';
 import { PageProgressBar } from './components/common/PageProgressBar';
 import { RoundHomeButton } from './components/common/RoundHomeButton';
 import { KeyboardShortcutsModal } from './components/common/KeyboardShortcutsModal';
+import { FeedbackModal } from './components/common/FeedbackModal';
 
 import { HomeView } from './views/HomeView';
 import { PrivacyCheckupView } from './views/PrivacyCheckupView';
@@ -49,6 +50,7 @@ export default function App() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   // Global key listener for search, shortcuts guide, and quick navigation to common tools
   useEffect(() => {
@@ -233,7 +235,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-clip bg-[#EBF0F5] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-950 dark:selection:text-indigo-200 relative transition-colors duration-150">
+    <div className="min-h-screen w-full bg-[#EBF0F5] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-950 dark:selection:text-indigo-200 relative transition-colors duration-150">
       {/* Dynamic Route Progress Indicator */}
       <PageProgressBar currentPath={currentPath} />
 
@@ -271,7 +273,10 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <Footer onNavigate={handleNavigate} />
+      <Footer
+        onNavigate={handleNavigate}
+        onOpenFeedback={() => setIsFeedbackOpen(true)}
+      />
 
       {/* Command Palette (⌘K) */}
       <CommandPalette
@@ -291,6 +296,12 @@ export default function App() {
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
         onNavigate={handleNavigate}
+      />
+
+      {/* Feedback & Tool Suggestion Modal */}
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
       />
     </div>
   );

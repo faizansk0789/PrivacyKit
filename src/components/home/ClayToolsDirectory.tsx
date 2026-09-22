@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
   Eye,
@@ -14,7 +15,8 @@ import {
   X,
   Sparkles
 } from 'lucide-react';
-import { playPop, playHover } from '../../utils/soundEngine';
+import { playPop, playHover, playClayCardHover } from '../../utils/soundEngine';
+import { FileTypeIcon } from '../common/FileTypeIcon';
 
 interface ClayToolsDirectoryProps {
   onNavigate: (path: string) => void;
@@ -29,6 +31,7 @@ export interface ClayToolItem {
   path: string;
   categories: Array<'Privacy Checkup' | 'Media' | 'Links' | 'Security'>;
   icon: React.ComponentType<{ className?: string }>;
+  fileType: 'pdf' | 'jpg' | 'docx' | 'mp4' | 'mp3' | 'url' | 'key' | 'shield';
 }
 
 export const CLAY_TOOLS: ClayToolItem[] = [
@@ -41,6 +44,7 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/exif-remover',
     categories: ['Privacy Checkup', 'Media'],
     icon: Eye,
+    fileType: 'jpg',
   },
   {
     id: 'video-metadata-cleaner',
@@ -51,6 +55,7 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/video-metadata-cleaner',
     categories: ['Privacy Checkup', 'Media'],
     icon: Film,
+    fileType: 'mp4',
   },
   {
     id: 'audio-metadata-cleaner',
@@ -61,6 +66,7 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/audio-metadata-cleaner',
     categories: ['Media'],
     icon: Music,
+    fileType: 'mp3',
   },
   {
     id: 'pdf-metadata-cleaner',
@@ -71,16 +77,18 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/pdf-metadata-cleaner',
     categories: ['Privacy Checkup'],
     icon: FileText,
+    fileType: 'pdf',
   },
   {
     id: 'doc-metadata-cleaner',
     name: 'Document Metadata Cleaner',
     summary: 'DOCX, XLSX, PPTX scrubber',
     desc: 'Strip author identities, last modified timestamps, template paths, and revision histories from Office documents.',
-    format: 'Office Documents',
+    format: 'DOCX, XLSX, PPTX',
     path: '/tools/doc-metadata-cleaner',
     categories: ['Privacy Checkup'],
     icon: Layers,
+    fileType: 'docx',
   },
   {
     id: 'url-privacy-cleaner',
@@ -91,6 +99,7 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/url-privacy-cleaner',
     categories: ['Links'],
     icon: Link2Off,
+    fileType: 'url',
   },
   {
     id: 'password-generator',
@@ -101,6 +110,7 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/password-generator',
     categories: ['Security'],
     icon: KeyRound,
+    fileType: 'key',
   },
   {
     id: 'passphrase-generator',
@@ -111,6 +121,7 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/password-generator?tab=passphrase',
     categories: ['Security'],
     icon: Lock,
+    fileType: 'key',
   },
   {
     id: 'random-username-generator',
@@ -121,6 +132,7 @@ export const CLAY_TOOLS: ClayToolItem[] = [
     path: '/tools/password-generator?tab=username',
     categories: ['Security'],
     icon: UserCheck,
+    fileType: 'shield',
   },
 ];
 
@@ -203,9 +215,11 @@ export const ClayToolsDirectory: React.FC<ClayToolsDirectoryProps> = ({ onNaviga
           {categories.map((cat) => {
             const isActive = activeCategory === cat;
             return (
-              <button
+              <motion.button
                 key={cat}
                 id={`filter-${cat.toLowerCase().replace(/\s+/g, '-')}`}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => {
                   playHover();
                   setActiveCategory(cat);
@@ -217,65 +231,81 @@ export const ClayToolsDirectory: React.FC<ClayToolsDirectoryProps> = ({ onNaviga
                 }`}
               >
                 {cat}
-              </button>
+              </motion.button>
             );
           })}
         </div>
       </div>
 
       {/* Tools Grid: Exhaustive 2-Column Responsive Layout */}
-      <div 
+      <motion.div 
         id="tools-clay-grid"
+        layout
         className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto mt-10"
       >
-        {filteredTools.map((tool) => {
-          const IconComp = tool.icon;
-          return (
-            <div
-              key={tool.id}
-              id={`tool-card-${tool.id}`}
-              onClick={() => handleToolClick(tool.path)}
-              onMouseEnter={playHover}
-              className="clay-card p-6 sm:p-7 flex flex-col justify-between cursor-pointer group"
-            >
-              <div>
-                {/* Top Row: Embossed squircle pod on left, emerald status badge on right */}
-                <div className="flex items-start justify-between gap-4">
-                  <div className="w-12 h-12 rounded-[18px] clay-icon-pod flex items-center justify-center shrink-0">
-                    <IconComp className="w-5 h-5 text-indigo-600 dark:text-indigo-300" />
+        <AnimatePresence>
+          {filteredTools.map((tool, idx) => {
+            const IconComp = tool.icon;
+            return (
+              <motion.div
+                key={tool.id}
+                id={`tool-card-${tool.id}`}
+                layout
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.22, delay: idx * 0.03 }}
+                whileHover={{ y: -5 }}
+                whileTap={{ scale: 0.985 }}
+                onClick={() => handleToolClick(tool.path)}
+                onMouseEnter={playClayCardHover}
+                className="clay-card p-6 sm:p-7 flex flex-col justify-between cursor-pointer group"
+              >
+                <div>
+                  {/* Top Row: Embossed squircle pod on left with distinct file type SVG, emerald status badge on right */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="relative">
+                      <div className="w-13 h-13 rounded-[20px] clay-icon-pod flex items-center justify-center shrink-0 p-2.5">
+                        <FileTypeIcon type={tool.fileType} className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                      </div>
+                      {/* Secondary micro indicator icon */}
+                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white dark:bg-[#1A2438] border border-slate-200/80 dark:border-slate-700 shadow-sm flex items-center justify-center text-slate-500 dark:text-slate-300">
+                        <IconComp className="w-2.5 h-2.5" />
+                      </span>
+                    </div>
+                    <span className="clay-status-pill text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 tracking-wide flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      100% In-Browser
+                    </span>
                   </div>
-                  <span className="clay-status-pill text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 tracking-wide flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    100% In-Browser
-                  </span>
+
+                  {/* Title & Summaries */}
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {tool.name}
+                  </h3>
+                  <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-1 uppercase tracking-wide">
+                    {tool.summary}
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mt-2 line-clamp-2 font-normal">
+                    {tool.desc}
+                  </p>
                 </div>
 
-                {/* Title & Summaries */}
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  {tool.name}
-                </h3>
-                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mt-1 uppercase tracking-wide">
-                  {tool.summary}
-                </p>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mt-2 line-clamp-2 font-normal">
-                  {tool.desc}
-                </p>
-              </div>
-
-              {/* Bottom Row: File format label on left, Launch link on right */}
-              <div className="flex items-center justify-between pt-4 mt-5 border-t border-slate-100 dark:border-slate-800">
-                <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
-                  {tool.format}
-                </span>
-                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 flex items-center gap-1 transition-colors">
-                  <span>Launch Tool</span>
-                  <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                {/* Bottom Row: File format label on left, Launch link on right */}
+                <div className="flex items-center justify-between pt-4 mt-5 border-t border-slate-200/60 dark:border-slate-800">
+                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
+                    {tool.format}
+                  </span>
+                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 flex items-center gap-1 transition-colors">
+                    <span>Launch Tool</span>
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </motion.div>
 
       {filteredTools.length === 0 && (
         <div className="text-center py-16 clay-inset-card max-w-md mx-auto mt-8">

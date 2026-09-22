@@ -5,6 +5,7 @@
 
 let audioCtx: AudioContext | null = null;
 let soundEnabled = true;
+let hapticEnabled = true;
 
 // Initialize or get the AudioContext safely
 function getAudioContext(): AudioContext | null {
@@ -51,10 +52,52 @@ export function toggleSound(): boolean {
   return next;
 }
 
-export function triggerHaptic(duration: number | number[] = 10): void {
+export function isHapticEnabled(): boolean {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('privacykit_haptic_enabled');
+    if (saved !== null) {
+      hapticEnabled = saved === 'true';
+    }
+  }
+  return hapticEnabled;
+}
+
+export function setHapticEnabled(enabled: boolean): void {
+  hapticEnabled = enabled;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('privacykit_haptic_enabled', enabled ? 'true' : 'false');
+  }
+}
+
+export function toggleHaptic(): boolean {
+  const next = !isHapticEnabled();
+  setHapticEnabled(next);
+  if (next) {
+    triggerHaptic(3);
+  }
+  return next;
+}
+
+/**
+ * Trigger subtle, restrained tactile haptic vibrations.
+ * Applies a 0.35x scale factor (capped to gentle micro-pulses) to drastically reduce vibration intensity site-wide.
+ * Respects the user's haptic toggle setting.
+ */
+export function triggerHaptic(duration: number | number[] = 6): void {
+  if (!isHapticEnabled()) return;
   if (typeof window !== 'undefined' && 'vibrate' in navigator) {
     try {
-      navigator.vibrate(duration as VibratePattern);
+      if (Array.isArray(duration)) {
+        // Scale down pattern intervals for soft, whisper-quiet micro-vibrations
+        const softenedPattern = duration.map((val, idx) =>
+          idx % 2 === 0 ? Math.max(1, Math.round(val * 0.3)) : Math.round(val * 0.6)
+        );
+        navigator.vibrate(softenedPattern);
+      } else {
+        // Scale down single vibration duration to gentle micro-tap (max 6ms)
+        const softMs = Math.max(1, Math.min(6, Math.round(duration * 0.35)));
+        navigator.vibrate(softMs);
+      }
     } catch (e) {
       // Ignored if vibration is not supported or blocked
     }
@@ -66,7 +109,7 @@ export function triggerHaptic(duration: number | number[] = 10): void {
  */
 export function playPop(): void {
   if (!isSoundEnabled()) return;
-  triggerHaptic(8);
+  triggerHaptic(4);
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -119,6 +162,80 @@ export function playHover(): void {
     osc.stop(now + 0.025);
   } catch (e) {
     // Ignore
+  }
+}
+
+/**
+ * Subtle tactile 'click-clack' audio feedback for neomorphic clay-card hover states.
+ * Synthesizes a delicate dual-transient mechanical thud/tick evoking extruded physical tactile surfaces.
+ */
+let lastClickClackTime = 0;
+
+export function playClayCardHover(): void {
+  if (!isSoundEnabled()) return;
+  
+  // Rate-limit click-clack so rapid mouse sweeps remain crisp, musical and never muddy
+  const currentTimeMs = Date.now();
+  if (currentTimeMs - lastClickClackTime < 65) {
+    return;
+  }
+  lastClickClackTime = currentTimeMs;
+
+  triggerHaptic(5);
+  const ctx = getAudioContext();
+  if (!ctx) return;
+
+  try {
+    const now = ctx.currentTime;
+
+    // Transient 1: Initial crisp 'click' impulse (micro snappy contact)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    const filter1 = ctx.createBiquadFilter();
+
+    filter1.type = 'bandpass';
+    filter1.frequency.setValueAtTime(1200, now);
+    filter1.Q.setValueAtTime(3.5, now);
+
+    osc1.type = 'triangle';
+    osc1.frequency.setValueAtTime(860, now);
+    osc1.frequency.exponentialRampToValueAtTime(320, now + 0.016);
+
+    gain1.gain.setValueAtTime(0.028, now);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
+
+    osc1.connect(filter1);
+    filter1.connect(gain1);
+    gain1.connect(ctx.destination);
+
+    osc1.start(now);
+    osc1.stop(now + 0.018);
+
+    // Transient 2: Subtle hollow resonant 'clack' body (occurring ~18ms later)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    const filter2 = ctx.createBiquadFilter();
+
+    const t2 = now + 0.014;
+
+    filter2.type = 'lowpass';
+    filter2.frequency.setValueAtTime(900, t2);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(420, t2);
+    osc2.frequency.exponentialRampToValueAtTime(180, t2 + 0.024);
+
+    gain2.gain.setValueAtTime(0.022, t2);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, t2 + 0.024);
+
+    osc2.connect(filter2);
+    filter2.connect(gain2);
+    gain2.connect(ctx.destination);
+
+    osc2.start(t2);
+    osc2.stop(t2 + 0.026);
+  } catch (e) {
+    // Ignore audio errors gracefully
   }
 }
 

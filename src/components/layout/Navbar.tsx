@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shield,
   Home,
@@ -8,14 +8,18 @@ import {
   Moon,
   Menu,
   X,
-  Keyboard
+  Keyboard,
+  Vibrate,
+  VibrateOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   playPop,
   playHover,
   isSoundEnabled,
-  toggleSound
+  toggleSound,
+  isHapticEnabled,
+  toggleHaptic
 } from '../../utils/soundEngine';
 import { ThemeToggleSwitch } from '../common/ThemeToggleSwitch';
 
@@ -37,10 +41,26 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  const [hapticOn, setHapticOn] = useState(isHapticEnabled());
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 12);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSoundToggle = () => {
     const next = toggleSound();
     setSoundOn(next);
+  };
+
+  const handleHapticToggle = () => {
+    const next = toggleHaptic();
+    setHapticOn(next);
   };
 
   const handleNav = (path: string) => {
@@ -56,9 +76,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full max-w-full px-3 sm:px-6 overflow-x-clip">
-      {/* Floating Translucent Pill Dock */}
-      <div className="rounded-full py-2.5 px-3.5 sm:px-6 clay-nav-dock mx-auto max-w-5xl flex items-center justify-between mt-3 sm:mt-4 transition-colors duration-300">
+    <header className="sticky top-0 z-50 w-full px-3 sm:px-6 pointer-events-none transition-all duration-300">
+      {/* Floating Translucent Frosted Glass Pill Dock */}
+      <div 
+        className={`pointer-events-auto rounded-full py-2.5 px-3.5 sm:px-6 clay-nav-dock mx-auto max-w-5xl flex items-center justify-between transition-all duration-300 ${
+          isScrolled
+            ? 'mt-2 sm:mt-2.5 shadow-2xl backdrop-blur-3xl bg-white/45 dark:bg-[#0D1322]/50 border-white/80 dark:border-white/15'
+            : 'mt-3 sm:mt-4'
+        }`}
+      >
         {/* Left: Brand Logo */}
         <button
           onClick={() => handleNav('/')}
@@ -167,6 +193,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             {soundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
           </button>
 
+          {/* Haptic vibration feedback toggle */}
+          <button
+            id="haptic-toggle-btn"
+            onClick={handleHapticToggle}
+            onMouseEnter={playHover}
+            title={hapticOn ? 'Haptic feedback ENABLED (subtle)' : 'Haptic feedback DISABLED'}
+            aria-label={hapticOn ? 'Haptic feedback ENABLED' : 'Haptic feedback DISABLED'}
+            className={`hidden sm:flex w-8 h-8 rounded-full border shadow-xs items-center justify-center transition-all cursor-pointer shrink-0 ${
+              hapticOn
+                ? 'bg-slate-100 dark:bg-[#1A2438] border-slate-200 dark:border-slate-700/60 text-indigo-600 dark:text-indigo-400 hover:border-slate-300'
+                : 'bg-slate-100 dark:bg-[#1A2438] border-slate-200 dark:border-slate-700/60 text-slate-400 dark:text-slate-500 hover:text-slate-600'
+            }`}
+          >
+            {hapticOn ? <Vibrate className="w-3.5 h-3.5" /> : <VibrateOff className="w-3.5 h-3.5" />}
+          </button>
+
           {/* Mobile Menu Toggle (Optimized Three Lines / Hamburger Button) */}
           <button
             id="mobile-menu-btn"
@@ -196,7 +238,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="md:hidden mt-2 mx-auto max-w-5xl rounded-2xl bg-white dark:bg-[#131B2E] border border-slate-200/90 dark:border-slate-800 shadow-xl p-3 space-y-1 transition-colors duration-300"
+            className="pointer-events-auto md:hidden mt-2 mx-auto max-w-5xl rounded-2xl bg-white/85 dark:bg-[#131B2E]/85 backdrop-blur-2xl border border-white/80 dark:border-white/10 shadow-2xl p-3 space-y-1 transition-colors duration-300"
           >
             <div className="flex flex-col space-y-1">
               <button
@@ -255,8 +297,45 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Dashboard</span>
               </button>
 
-              {/* Mobile Theme Toggle Row */}
+              {/* Mobile Haptic & Sound Feedback Rows */}
               <div className="pt-2 mt-1 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between px-3.5 py-2">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                  {hapticOn ? <Vibrate className="w-3.5 h-3.5 text-indigo-500" /> : <VibrateOff className="w-3.5 h-3.5 text-slate-400" />}
+                  <span>Haptic Feedback</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleHapticToggle}
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
+                    hapticOn
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {hapticOn ? 'ON' : 'OFF'}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between px-3.5 py-2">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                  {soundOn ? <Volume2 className="w-3.5 h-3.5 text-indigo-500" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
+                  <span>Audio Feedback</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleSoundToggle}
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
+                    soundOn
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {soundOn ? 'ON' : 'MUTED'}
+                </button>
+              </div>
+
+              {/* Mobile Theme Toggle Row */}
+              <div className="flex items-center justify-between px-3.5 py-2">
                 <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 flex items-center gap-2">
                   {isDark ? <Moon className="w-3.5 h-3.5 text-indigo-400" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
                   <span>Appearance</span>
