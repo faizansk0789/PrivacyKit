@@ -5,7 +5,9 @@ import { createSampleDocxFile, createSampleImageFile, createSamplePdfFile } from
 import { playPop, playHover, playSuccess } from '../../utils/soundEngine';
 
 export interface DropzoneProps {
-  onFileSelected: (file: File) => void;
+  onFileSelected?: (file: File) => void;
+  onFilesSelected?: (files: File[]) => void;
+  multiple?: boolean;
   acceptedFormats?: string[];
   acceptedMimeTypes?: string[];
   title?: string;
@@ -19,6 +21,8 @@ export interface DropzoneProps {
 
 export const Dropzone: React.FC<DropzoneProps> = ({
   onFileSelected,
+  onFilesSelected,
+  multiple = false,
   acceptedFormats = ['JPG', 'JPEG', 'PNG', 'WEBP', 'PDF', 'DOCX', 'XLSX', 'PPTX'],
   acceptedMimeTypes = [
     'image/jpeg',
@@ -103,7 +107,50 @@ export const Dropzone: React.FC<DropzoneProps> = ({
     }
 
     playSuccess();
-    onFileSelected(file);
+    if (onFileSelected) onFileSelected(file);
+    if (onFilesSelected) onFilesSelected([file]);
+  };
+
+  const processMultipleFiles = (fileList: FileList | File[]) => {
+    const rawFiles = Array.from(fileList);
+    if (rawFiles.length === 0) return;
+
+    if (!multiple || (!onFilesSelected && onFileSelected)) {
+      validateAndProcessFile(rawFiles[0]);
+      return;
+    }
+
+    setErrorMessage(null);
+    const validFiles: File[] = [];
+    const invalidNames: string[] = [];
+
+    rawFiles.forEach((f) => {
+      if (f.size > maxSizeBytes) {
+        invalidNames.push(`${f.name} (exceeds ${(maxSizeBytes / (1024 * 1024)).toFixed(0)}MB)`);
+        return;
+      }
+      const ext = f.name.split('.').pop()?.toUpperCase();
+      const isExtensionMatch = ext && acceptedFormats.includes(ext);
+      const isMimeMatch = acceptedMimeTypes.length === 0 || acceptedMimeTypes.includes(f.type);
+      if (isExtensionMatch || isMimeMatch) {
+        validFiles.push(f);
+      } else {
+        invalidNames.push(`${f.name} (unsupported format)`);
+      }
+    });
+
+    if (invalidNames.length > 0) {
+      setErrorMessage(`Some files could not be added: ${invalidNames.slice(0, 3).join(', ')}${invalidNames.length > 3 ? ` and ${invalidNames.length - 3} more` : ''}`);
+    }
+
+    if (validFiles.length > 0) {
+      playSuccess();
+      if (onFilesSelected) {
+        onFilesSelected(validFiles);
+      } else if (onFileSelected) {
+        onFileSelected(validFiles[0]);
+      }
+    }
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -144,14 +191,24 @@ export const Dropzone: React.FC<DropzoneProps> = ({
     setIsDragOver(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      validateAndProcessFile(e.dataTransfer.files[0]);
+      if (multiple && (onFilesSelected || e.dataTransfer.files.length > 1)) {
+        processMultipleFiles(e.dataTransfer.files);
+      } else {
+        validateAndProcessFile(e.dataTransfer.files[0]);
+      }
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      validateAndProcessFile(e.target.files[0]);
+      if (multiple && onFilesSelected) {
+        processMultipleFiles(e.target.files);
+      } else {
+        validateAndProcessFile(e.target.files[0]);
+      }
     }
+    // reset input value so re-selecting same file fires change
+    e.target.value = '';
   };
 
   const loadSample = async (type: 'image' | 'pdf' | 'doc') => {
@@ -241,6 +298,7 @@ export const Dropzone: React.FC<DropzoneProps> = ({
             className="hidden"
             onChange={handleInputChange}
             accept={acceptedMimeTypes.join(',')}
+            multiple={multiple}
             disabled={isLoading}
           />
 

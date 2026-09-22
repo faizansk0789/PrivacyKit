@@ -11,10 +11,12 @@ import {
   Building,
   Calendar,
   Check,
-  ShieldCheck
+  ShieldCheck,
+  Files
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Dropzone } from '../components/common/Dropzone';
+import { BatchFileCleaner } from '../components/common/BatchFileCleaner';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { ScoreMeter } from '../components/common/ScoreMeter';
 import { parseDocMetadata, stripDocMetadata } from '../utils/docEngine';
@@ -36,6 +38,7 @@ export const DocCleanerView: React.FC<DocCleanerViewProps> = ({ onNavigate }) =>
   const [cleanedFileName, setCleanedFileName] = useState('');
   const [strippedItems, setStrippedItems] = useState<string[]>([]);
   const [isDone, setIsDone] = useState(false);
+  const [mode, setMode] = useState<'single' | 'batch'>('single');
   const downloadSectionRef = useRef<HTMLDivElement>(null);
 
   const needsCleaning = Boolean(
@@ -160,8 +163,64 @@ export const DocCleanerView: React.FC<DocCleanerViewProps> = ({ onNavigate }) =>
         </div>
       </div>
 
-      {/* Upload Dropzone */}
-      {!docData && (
+      {/* Mode Switcher */}
+      <div className="flex justify-center">
+        <div className="p-1.5 rounded-full clay-card flex items-center gap-1 shadow-sm">
+          <button
+            id="doc-mode-single"
+            type="button"
+            onClick={() => {
+              playPop();
+              setMode('single');
+            }}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              mode === 'single'
+                ? 'clay-pill-active'
+                : 'clay-pill-inactive'
+            }`}
+          >
+            Single Document Audit
+          </button>
+          <button
+            id="doc-mode-batch"
+            type="button"
+            onClick={() => {
+              playPop();
+              setMode('batch');
+            }}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              mode === 'batch'
+                ? 'clay-pill-active'
+                : 'clay-pill-inactive'
+            }`}
+          >
+            <Files className="w-3.5 h-3.5" />
+            <span>Batch Documents (Multiple)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Batch Processing Mode */}
+      {mode === 'batch' && (
+        <div className="space-y-6 animate-fadeIn">
+          <BatchFileCleaner
+            title="Drop multiple Office documents to clean at once"
+            subtitle="Queue DOCX, XLSX, or PPTX documents for simultaneous in-browser privacy stripping"
+            acceptedFormats={['DOCX', 'XLSX', 'PPTX']}
+            acceptedMimeTypes={[
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            ]}
+            sampleType="doc"
+            accentColor="blue"
+            toolName="Office Doc Batch Cleaner"
+          />
+        </div>
+      )}
+
+      {/* Single Mode Upload Dropzone */}
+      {mode === 'single' && !docData && (
         <div className="space-y-6 animate-fadeIn">
           <Dropzone
             onFileSelected={handleFileSelected}
@@ -179,8 +238,8 @@ export const DocCleanerView: React.FC<DocCleanerViewProps> = ({ onNavigate }) =>
         </div>
       )}
 
-      {/* Analysis and Clean Workspace */}
-      {docData && (
+      {/* Single Mode Analysis and Clean Workspace */}
+      {mode === 'single' && docData && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top Bar */}
           <div className="clay-card p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">

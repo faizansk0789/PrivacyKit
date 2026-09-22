@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { CommandPalette } from './components/common/CommandPalette';
-import { AuthModal } from './components/common/AuthModal';
 import { CinematicBackground } from './components/common/CinematicBackground';
 import { PageProgressBar } from './components/common/PageProgressBar';
+import { RoundHomeButton } from './components/common/RoundHomeButton';
+import { KeyboardShortcutsModal } from './components/common/KeyboardShortcutsModal';
 
 import { HomeView } from './views/HomeView';
 import { PrivacyCheckupView } from './views/PrivacyCheckupView';
@@ -22,8 +23,6 @@ import { LearnView } from './views/LearnView';
 import { AboutView } from './views/AboutView';
 import { LegalView } from './views/LegalView';
 
-import { getUserAccount } from './utils/storage';
-import { UserAccount } from './types';
 import { playPop } from './utils/soundEngine';
 
 // Ensures instant scroll reset to top at mount time before paint, preventing transition jumping
@@ -49,18 +48,99 @@ export default function App() {
   });
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const [account, setAccount] = useState<UserAccount>(getUserAccount());
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
-  // Keyboard shortcut ⌘K or Ctrl+K for search
+  // Global key listener for search, shortcuts guide, and quick navigation to common tools
   useEffect(() => {
+    let lastKey = '';
+    let lastKeyTime = 0;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      // Ignore keystrokes when typing in inputs, textareas, or contentEditable elements
+      const target = e.target as HTMLElement | null;
+      const isInputFocused =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable ||
+          target.getAttribute('role') === 'textbox');
+
+      // Command palette: ⌘K or Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
+        return;
       }
+
+      // If user is currently typing in an input field, do not trigger single/chord hotkeys
+      if (isInputFocused) {
+        return;
+      }
+
+      // Open shortcuts modal with "?"
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        e.preventDefault();
+        playPop();
+        setIsShortcutsOpen((prev) => !prev);
+        return;
+      }
+
+      // Sequential 2-key navigation: 'g' then <key> (within 1200ms)
+      const now = Date.now();
+      const key = e.key.toLowerCase();
+
+      if (lastKey === 'g' && now - lastKeyTime < 1200) {
+        let destination: string | null = null;
+
+        switch (key) {
+          case 'p':
+            destination = '/tools/password-generator';
+            break;
+          case 'e':
+            destination = '/tools/exif-remover';
+            break;
+          case 'd':
+            destination = '/tools/pdf-metadata-cleaner';
+            break;
+          case 'o':
+            destination = '/tools/doc-metadata-cleaner';
+            break;
+          case 'u':
+            destination = '/tools/url-privacy-cleaner';
+            break;
+          case 'c':
+            destination = '/privacy-checkup';
+            break;
+          case 'h':
+            destination = '/';
+            break;
+          case 't':
+            destination = '/tools';
+            break;
+          default:
+            destination = null;
+        }
+
+        if (destination) {
+          e.preventDefault();
+          playPop();
+          handleNavigate(destination);
+          lastKey = '';
+          return;
+        }
+      }
+
+      // Track 'g' key stroke start
+      if (key === 'g' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        lastKey = 'g';
+        lastKeyTime = now;
+        return;
+      }
+
+      // Reset sequence tracker if another key was pressed
+      lastKey = '';
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
@@ -102,15 +182,6 @@ export default function App() {
     }
   };
 
-  const handleOpenAuth = (mode?: 'signin' | 'signup') => {
-    setAuthMode(mode || 'signin');
-    setIsAuthOpen(true);
-  };
-
-  const handleAuthSuccess = (newAcc: UserAccount) => {
-    setAccount(newAcc);
-  };
-
   const toggleTheme = () => {
     playPop();
     const nextDark = !isDark;
@@ -147,7 +218,7 @@ export default function App() {
     } else if (path === '/tools' || path.startsWith('/tools?') || path.startsWith('/pricing')) {
       return <ToolsDirectoryView onNavigate={handleNavigate} />;
     } else if (path.startsWith('/dashboard')) {
-      return <DashboardView onNavigate={handleNavigate} onOpenAuth={handleOpenAuth} account={account} />;
+      return <DashboardView onNavigate={handleNavigate} />;
     } else if (path.startsWith('/learn')) {
       return <LearnView onNavigate={handleNavigate} />;
     } else if (path.startsWith('/about')) {
@@ -174,10 +245,9 @@ export default function App() {
         currentPath={currentPath}
         onNavigate={handleNavigate}
         onOpenSearch={() => setIsSearchOpen(true)}
-        onOpenAuth={handleOpenAuth}
-        account={account}
         isDark={isDark}
         onToggleTheme={toggleTheme}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
       />
 
       {/* Main Content View with Seamless Transitions */}
@@ -210,13 +280,17 @@ export default function App() {
         onNavigate={handleNavigate}
       />
 
-      {/* Auth / Pro Modal */}
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
-        initialMode={authMode}
-        onAuthSuccess={handleAuthSuccess}
-        onAccountUpdated={handleAuthSuccess}
+      {/* Single Round Shape Floating Home Button */}
+      <RoundHomeButton
+        currentPath={currentPath}
+        onNavigate={handleNavigate}
+      />
+
+      {/* Keyboard Shortcuts Modal (?) */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+        onNavigate={handleNavigate}
       />
     </div>
   );

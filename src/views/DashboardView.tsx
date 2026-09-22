@@ -31,20 +31,16 @@ import {
   getSavedPrivacyReports,
   deletePrivacyReport,
   clearActivityLogs,
-  getUserAccount,
   getLocalStorageUsage
 } from '../utils/storage';
-import { UserActivityLog, UnifiedPrivacyReport, UserAccount } from '../types';
+import { UserActivityLog, UnifiedPrivacyReport } from '../types';
 import { playPop, playHover, playSuccess } from '../utils/soundEngine';
 
 interface DashboardViewProps {
   onNavigate: (path: string) => void;
-  onOpenAuth?: (mode?: 'signin') => void;
-  account?: UserAccount;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, account: propAccount }) => {
-  const [account, setAccount] = useState<UserAccount>(propAccount || getUserAccount());
+export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const [logs, setLogs] = useState<UserActivityLog[]>([]);
   const [savedReports, setSavedReports] = useState<UnifiedPrivacyReport[]>([]);
   const [activeTab, setActiveTab] = useState<'activity' | 'reports'>('activity');
@@ -57,7 +53,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, accoun
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const reloadData = () => {
-    setAccount(propAccount || getUserAccount());
     setLogs(getActivityLogs());
     setSavedReports(getSavedPrivacyReports());
     setStorageUsage(getLocalStorageUsage());
@@ -65,7 +60,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, accoun
 
   useEffect(() => {
     reloadData();
-  }, [propAccount]);
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -103,9 +98,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, accoun
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
       storageStats: storageUsage,
-      accountSummary: {
-        plan: account.plan,
-        usageCount: account.usageCount,
+      summary: {
+        totalScans: logs.length,
+        totalFilesCleaned,
+        totalItemsRemoved,
+        totalBytesRemoved,
       },
       activityLogs: logs,
       savedReports,

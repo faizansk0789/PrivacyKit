@@ -9,7 +9,8 @@ import {
   RotateCcw,
   ArrowRight,
   ShieldCheck,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TrustBadge } from '../components/common/TrustBadge';
@@ -361,9 +362,27 @@ export const UrlCleanerView: React.FC<UrlCleanerViewProps> = ({ onNavigate }) =>
         <div className="max-w-3xl mx-auto space-y-8">
           <form onSubmit={handleBatchClean} className="space-y-4">
             <div className="clay-card p-6 sm:p-8 space-y-4">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Paste multiple URLs (one per line)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  Paste multiple URLs (one per line)
+                </label>
+                {(batchInput.length > 0 || batchResults.length > 0) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPop();
+                      setBatchInput('');
+                      setBatchResults([]);
+                      setError(null);
+                    }}
+                    onMouseEnter={playHover}
+                    className="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear All</span>
+                  </button>
+                )}
+              </div>
 
               <textarea
                 rows={5}

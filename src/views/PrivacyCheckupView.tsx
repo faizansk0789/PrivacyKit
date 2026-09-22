@@ -19,10 +19,12 @@ import {
   FileText,
   FileSpreadsheet,
   Trash2,
-  Bookmark
+  Bookmark,
+  Files
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Dropzone } from '../components/common/Dropzone';
+import { BatchFileCleaner } from '../components/common/BatchFileCleaner';
 import { ScoreMeter } from '../components/common/ScoreMeter';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { parseImageMetadata, stripImageMetadata } from '../utils/exifEngine';
@@ -39,7 +41,7 @@ interface PrivacyCheckupViewProps {
 }
 
 export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNavigate }) => {
-  const [activeTab, setActiveTab] = useState<'file' | 'url'>('file');
+  const [activeTab, setActiveTab] = useState<'file' | 'batch' | 'url'>('file');
   const [isScanning, setIsScanning] = useState(false);
   const [scanStage, setScanStage] = useState<number>(0);
   const [urlInput, setUrlInput] = useState('');
@@ -329,14 +331,30 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
                 setUrlError(null);
               }}
               onMouseEnter={playHover}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === 'file'
                   ? 'clay-pill-active text-white'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <FileCheck2 className="w-4 h-4" />
-              <span>File Check</span>
+              <span>File Audit</span>
+            </button>
+            <button
+              onClick={() => {
+                playPop();
+                setActiveTab('batch');
+                setUrlError(null);
+              }}
+              onMouseEnter={playHover}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'batch'
+                  ? 'clay-pill-active text-white'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Files className="w-4 h-4" />
+              <span>Batch Clean</span>
             </button>
             <button
               onClick={() => {
@@ -345,7 +363,7 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
                 setUrlError(null);
               }}
               onMouseEnter={playHover}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === 'url'
                   ? 'clay-pill-active text-white'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -366,6 +384,20 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
             title="Drop your file here"
             subtitle="or choose a JPG, PNG, WEBP, PDF, or DOCX/XLSX/PPTX file"
             sampleType="any"
+          />
+        </div>
+      )}
+
+      {/* 2. Batch Upload Area */}
+      {!report && !isScanning && activeTab === 'batch' && (
+        <div className="space-y-6 animate-fadeIn">
+          <BatchFileCleaner
+            title="Batch clean multiple files at once"
+            subtitle="Queue photos, PDFs, or Office documents for simultaneous local in-browser sanitization"
+            acceptedFormats={['JPG', 'JPEG', 'PNG', 'WEBP', 'PDF', 'DOCX', 'XLSX', 'PPTX']}
+            sampleType="any"
+            accentColor="indigo"
+            toolName="Privacy Checkup Batch"
           />
         </div>
       )}

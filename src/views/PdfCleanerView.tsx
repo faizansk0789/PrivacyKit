@@ -11,10 +11,12 @@ import {
   Layers,
   Check,
   ShieldCheck,
-  Info
+  Info,
+  Files
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Dropzone } from '../components/common/Dropzone';
+import { BatchFileCleaner } from '../components/common/BatchFileCleaner';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { ScoreMeter } from '../components/common/ScoreMeter';
 import { parsePdfMetadata, stripPdfMetadata } from '../utils/pdfEngine';
@@ -36,6 +38,7 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
   const [cleanedFileName, setCleanedFileName] = useState('');
   const [strippedItems, setStrippedItems] = useState<string[]>([]);
   const [isDone, setIsDone] = useState(false);
+  const [mode, setMode] = useState<'single' | 'batch'>('single');
   const downloadSectionRef = useRef<HTMLDivElement>(null);
 
   const needsCleaning = Boolean(
@@ -160,8 +163,60 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
         </div>
       </div>
 
-      {/* Upload Dropzone */}
-      {!pdfData && (
+      {/* Mode Switcher */}
+      <div className="flex justify-center">
+        <div className="p-1.5 rounded-full clay-card flex items-center gap-1 shadow-sm">
+          <button
+            id="pdf-mode-single"
+            type="button"
+            onClick={() => {
+              playPop();
+              setMode('single');
+            }}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              mode === 'single'
+                ? 'clay-pill-active'
+                : 'clay-pill-inactive'
+            }`}
+          >
+            Single PDF Audit
+          </button>
+          <button
+            id="pdf-mode-batch"
+            type="button"
+            onClick={() => {
+              playPop();
+              setMode('batch');
+            }}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              mode === 'batch'
+                ? 'clay-pill-active'
+                : 'clay-pill-inactive'
+            }`}
+          >
+            <Files className="w-3.5 h-3.5" />
+            <span>Batch PDFs (Multiple)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Batch Processing Mode */}
+      {mode === 'batch' && (
+        <div className="space-y-6 animate-fadeIn">
+          <BatchFileCleaner
+            title="Drop multiple PDF documents to clean at once"
+            subtitle="Queue multiple PDF documents for simultaneous in-browser privacy stripping"
+            acceptedFormats={['PDF']}
+            acceptedMimeTypes={['application/pdf']}
+            sampleType="pdf"
+            accentColor="blue"
+            toolName="PDF Batch Sanitizer"
+          />
+        </div>
+      )}
+
+      {/* Single Mode Upload Dropzone */}
+      {mode === 'single' && !pdfData && (
         <div className="space-y-6 animate-fadeIn">
           <Dropzone
             onFileSelected={handleFileSelected}
@@ -175,8 +230,8 @@ export const PdfCleanerView: React.FC<PdfCleanerViewProps> = ({ onNavigate }) =>
         </div>
       )}
 
-      {/* PDF Analysis and Clean Workspace */}
-      {pdfData && (
+      {/* Single Mode PDF Analysis and Clean Workspace */}
+      {mode === 'single' && pdfData && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top Bar */}
           <div className="clay-card p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">

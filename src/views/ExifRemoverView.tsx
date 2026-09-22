@@ -17,10 +17,12 @@ import {
   ChevronUp,
   Eye,
   ExternalLink,
-  ShieldAlert
+  ShieldAlert,
+  Files
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Dropzone } from '../components/common/Dropzone';
+import { BatchFileCleaner } from '../components/common/BatchFileCleaner';
 import { TrustBadge } from '../components/common/TrustBadge';
 import { ScoreMeter } from '../components/common/ScoreMeter';
 import { parseImageMetadata, stripImageMetadata } from '../utils/exifEngine';
@@ -64,6 +66,9 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
   const [cleanedFileName, setCleanedFileName] = useState('');
   const [strippedItems, setStrippedItems] = useState<string[]>([]);
   const [isDone, setIsDone] = useState(false);
+
+  // Single Photo vs Batch Mode
+  const [mode, setMode] = useState<'single' | 'batch'>('single');
 
   // Tabs
   const [activeTab, setActiveTab] = useState<'inspector' | 'cleaner'>('inspector');
@@ -201,8 +206,60 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
         </div>
       </div>
 
-      {/* Upload Dropzone */}
-      {!exifData && (
+      {/* Mode Switcher */}
+      <div className="flex justify-center">
+        <div className="p-1.5 rounded-full clay-card flex items-center gap-1 shadow-sm">
+          <button
+            id="photo-mode-single"
+            type="button"
+            onClick={() => {
+              playPop();
+              setMode('single');
+            }}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              mode === 'single'
+                ? 'clay-pill-active'
+                : 'clay-pill-inactive'
+            }`}
+          >
+            Single Photo Inspector
+          </button>
+          <button
+            id="photo-mode-batch"
+            type="button"
+            onClick={() => {
+              playPop();
+              setMode('batch');
+            }}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              mode === 'batch'
+                ? 'clay-pill-active'
+                : 'clay-pill-inactive'
+            }`}
+          >
+            <Files className="w-3.5 h-3.5" />
+            <span>Batch Photos (Multiple)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Batch Processing Mode */}
+      {mode === 'batch' && (
+        <div className="space-y-6 animate-fadeIn">
+          <BatchFileCleaner
+            title="Drop multiple photos to clean at once"
+            subtitle="Queue JPG, PNG, or WEBP photos for simultaneous in-browser privacy stripping"
+            acceptedFormats={['JPG', 'JPEG', 'PNG', 'WEBP']}
+            acceptedMimeTypes={['image/jpeg', 'image/png', 'image/webp']}
+            sampleType="image"
+            accentColor="indigo"
+            toolName="Photo Batch Scrubber"
+          />
+        </div>
+      )}
+
+      {/* Single Mode Upload Dropzone */}
+      {mode === 'single' && !exifData && (
         <div className="space-y-6 animate-fadeIn">
           <Dropzone
             onFileSelected={handleFileSelected}
@@ -216,8 +273,8 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
         </div>
       )}
 
-      {/* Workspace */}
-      {exifData && (
+      {/* Single Mode Workspace */}
+      {mode === 'single' && exifData && (
         <div className="space-y-8 animate-fadeIn">
           {/* File Card */}
           <div className="clay-card p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
