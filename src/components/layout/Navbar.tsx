@@ -92,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="flex items-center gap-2.5 group focus:outline-none cursor-pointer"
         >
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-[2px_4px_8px_rgba(99,102,241,0.35),inset_1px_1px_2px_rgba(255,255,255,0.4)] group-hover:scale-105 transition-transform">
-            <Shield className="w-4.5 h-4.5" />
+            <img src="/file_0000000061ec8208b8558503bdf167ad.png" alt="Logo">
           </div>
           <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white transition-colors">
             PrivacyKit
