@@ -167,6 +167,120 @@ export default function App() {
     }
   }, [isDark]);
 
+  // Dynamically update document title, canonical link, and OpenGraph meta tags per tool route
+  useEffect(() => {
+    const routeMetaMap: Record<string, { title: string; desc: string; canonical: string }> = {
+      '/': {
+        title: 'PrivacyKit — Privacy-First File & Link Toolkit',
+        desc: 'Scan, clean, and understand what your files and links reveal about you. Remove EXIF GPS data, PDF signatures, and URL trackers 100% in your browser.',
+        canonical: 'https://privacykit.in/'
+      },
+      '/tools': {
+        title: 'Privacy Tools Directory — PrivacyKit',
+        desc: 'Explore client-side privacy utilities to scrub EXIF, clean PDF & document metadata, remove tracking parameters, and generate secure keys.',
+        canonical: 'https://privacykit.in/tools'
+      },
+      '/privacy-checkup': {
+        title: 'Privacy Checkup & Audit Engine — PrivacyKit',
+        desc: 'Evaluate digital privacy risk across your photos, documents, and web links before sharing. 100% browser-local zero-upload audit.',
+        canonical: 'https://privacykit.in/privacy-checkup'
+      },
+      '/tools/exif-remover': {
+        title: 'Photo EXIF & GPS Metadata Cleaner — PrivacyKit',
+        desc: 'Inspect and strip GPS latitude/longitude, camera specs, device serial numbers, and timestamps from photos before uploading.',
+        canonical: 'https://privacykit.in/tools/exif-remover'
+      },
+      '/tools/pdf-metadata-cleaner': {
+        title: 'PDF Metadata Cleaner & Author Anonymizer — PrivacyKit',
+        desc: 'Strip author names, corporate titles, software signatures, creation dates, and edit history from PDF documents locally.',
+        canonical: 'https://privacykit.in/tools/pdf-metadata-cleaner'
+      },
+      '/tools/doc-metadata-cleaner': {
+        title: 'Office Document Metadata Cleaner (Word, Excel, PowerPoint) — PrivacyKit',
+        desc: 'Scrub author identities, revision traces, template filepaths, and company info from DOCX, XLSX, and PPTX files.',
+        canonical: 'https://privacykit.in/tools/doc-metadata-cleaner'
+      },
+      '/tools/url-privacy-cleaner': {
+        title: 'URL Privacy & Tracker Cleaner — PrivacyKit',
+        desc: 'Strip UTM parameters, click tracking identifiers (fbclid, gclid, msclkid, ttclid), and referral payloads from links.',
+        canonical: 'https://privacykit.in/tools/url-privacy-cleaner'
+      },
+      '/tools/video-metadata-cleaner': {
+        title: 'Video Metadata & GPS Cleaner (MP4, MOV) — PrivacyKit',
+        desc: 'Inspect and strip location tags, device specs, creation software, and hidden metadata atoms from video recordings.',
+        canonical: 'https://privacykit.in/tools/video-metadata-cleaner'
+      },
+      '/tools/audio-metadata-cleaner': {
+        title: 'Audio Metadata & ID3 Tag Cleaner (MP3) — PrivacyKit',
+        desc: 'Clean artist identifiers, album names, embedded artwork, and recording hardware metadata from audio tracks.',
+        canonical: 'https://privacykit.in/tools/audio-metadata-cleaner'
+      },
+      '/tools/password-generator': {
+        title: 'CSPRNG Password & Diceware Passphrase Generator — PrivacyKit',
+        desc: 'Generate cryptographically secure passwords, high-entropy Diceware passphrases, and private aliases directly in your browser.',
+        canonical: 'https://privacykit.in/tools/password-generator'
+      },
+      '/learn': {
+        title: 'Privacy Guides & Threat Modeling — PrivacyKit',
+        desc: 'Understand digital metadata, threat modeling, EXIF exposure risks, and how client-side privacy architectures protect you.',
+        canonical: 'https://privacykit.in/learn'
+      },
+      '/dashboard': {
+        title: 'Local Session Privacy Dashboard — PrivacyKit',
+        desc: 'Monitor your local in-browser scrubbing activity, cleaned file counts, and private threat mitigation history.',
+        canonical: 'https://privacykit.in/dashboard'
+      },
+      '/about': {
+        title: 'About PrivacyKit & Client-Side Architecture',
+        desc: 'Discover why PrivacyKit was built with a strict zero-server, zero-upload local privacy philosophy.',
+        canonical: 'https://privacykit.in/about'
+      },
+      '/privacy': {
+        title: 'Privacy Policy — PrivacyKit (100% In-Browser Guarantee)',
+        desc: 'Our commitment to zero data collection, zero tracking, and zero remote processing of your files or links.',
+        canonical: 'https://privacykit.in/privacy'
+      },
+      '/terms': {
+        title: 'Terms of Service — PrivacyKit',
+        desc: 'Terms of service and guidelines for using PrivacyKit client-side privacy utilities.',
+        canonical: 'https://privacykit.in/terms'
+      }
+    };
+
+    const currentMeta = routeMetaMap[currentPath] || routeMetaMap['/'];
+
+    // Update document title
+    document.title = currentMeta.title;
+
+    // Helper to update or set meta tag
+    const updateMeta = (selector: string, attr: 'name' | 'property', key: string, content: string) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
+
+    updateMeta('meta[name="description"]', 'name', 'description', currentMeta.desc);
+    updateMeta('meta[property="og:title"]', 'property', 'og:title', currentMeta.title);
+    updateMeta('meta[property="og:description"]', 'property', 'og:description', currentMeta.desc);
+    updateMeta('meta[property="og:url"]', 'property', 'og:url', currentMeta.canonical);
+    updateMeta('meta[name="twitter:title"]', 'name', 'twitter:title', currentMeta.title);
+    updateMeta('meta[name="twitter:description"]', 'name', 'twitter:description', currentMeta.desc);
+    updateMeta('meta[name="twitter:url"]', 'name', 'twitter:url', currentMeta.canonical);
+
+    // Update canonical link
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', currentMeta.canonical);
+  }, [currentPath]);
+
   const handleNavigate = (path: string) => {
     if (path.startsWith('/#')) {
       const id = path.replace('/#', '');

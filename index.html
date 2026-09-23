@@ -6,19 +6,53 @@
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#EBF0F5" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B0F19" />
-    <title>PrivacyKit — Simple tools to protect your digital privacy</title>
-    <meta name="description" content="Scan, clean, and understand what your files and links reveal about you. 100% browser-first local processing." />
+
+    <!-- Primary Search Engine Discovery Meta Tags -->
+    <title>PrivacyKit — Privacy-First File & Link Toolkit</title>
+    <meta name="description" content="Scan, clean, and understand what your files and links reveal about you. Remove EXIF GPS data, PDF signatures, doc metadata, and URL trackers 100% in your browser." />
+    <meta name="keywords" content="privacy tools, exif remover, remove metadata, clean pdf metadata, url tracker remover, docx metadata scrubber, mp3 id3 tag cleaner, video metadata cleaner, client-side privacy, zero-upload privacy" />
+    <meta name="author" content="PrivacyKit" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
+    <!-- Canonical URL Link -->
+    <link rel="canonical" href="https://privacykit.in/" />
+
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="e33aa1p8yLi5YB3JmoBcfUxSVZ9nK7TJ9G2_voRSdx0" />
-    <link rel="google-site-verification" href="google-site-verification=e33aa1p8yLi5YB3JmoBcfUxSVZ9nK7TJ9G2_voRSdx0" />
-    <meta property="og:title" content="PrivacyKit — Privacy-First File & Link Toolkit" />
-    <meta property="og:description" content="Remove EXIF, GPS, PDF metadata, and URL trackers directly in your browser." />
+
+    <!-- OpenGraph Standard Metadata -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PrivacyKit" />
+    <meta property="og:url" content="https://privacykit.in/" />
+    <meta property="og:title" content="PrivacyKit — Privacy-First File & Link Toolkit" />
+    <meta property="og:description" content="Remove EXIF, GPS coordinates, PDF metadata, and URL trackers directly in your browser. 100% local, zero-upload guarantee." />
+    <meta property="og:image" content="https://privacykit.in/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="PrivacyKit — Client-Side Digital Privacy Suite" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X Card Metadata -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@privacykit" />
+    <meta name="twitter:creator" content="@privacykit" />
+    <meta name="twitter:url" content="https://privacykit.in/" />
+    <meta name="twitter:title" content="PrivacyKit — Privacy-First File & Link Toolkit" />
+    <meta name="twitter:description" content="Remove EXIF, GPS coordinates, PDF metadata, and URL trackers directly in your browser. 100% local, zero-upload guarantee." />
+    <meta name="twitter:image" content="https://privacykit.in/og-image.png" />
+
+    <!-- Web App & Mobile Meta -->
+    <meta name="application-name" content="PrivacyKit" />
+    <meta name="apple-mobile-web-app-title" content="PrivacyKit" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Fonts preconnect & stylesheet -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link google-site-verification=e33aa1p8yLi5YB3JmoBcfUxSVZ9nK7TJ9G2_voRSdx0>
+
+    <!-- Theme initialization script (prevents flash of unstyled theme) -->
     <script>
       (function() {
         try {
@@ -34,10 +68,129 @@
         } catch (e) {}
       })();
     </script>
+
+    <!-- Schema.org JSON-LD: Structured Data for WebApplication & Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://privacykit.in/#website",
+          "url": "https://privacykit.in/",
+          "name": "PrivacyKit",
+          "description": "Premium browser-first privacy toolkit to scan, clean, and protect digital files and URLs without uploading to servers.",
+          "publisher": {
+            "@id": "https://privacykit.in/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://privacykit.in/tools?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://privacykit.in/#organization",
+          "name": "PrivacyKit",
+          "url": "https://privacykit.in/",
+          "logo": "https://privacykit.in/favicon.svg",
+          "sameAs": []
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://privacykit.in/#webapp",
+          "name": "PrivacyKit — Client-Side Privacy Suite",
+          "url": "https://privacykit.in/",
+          "applicationCategory": "SecurityApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas & Web Cryptography API.",
+          "description": "Full-spectrum browser-based metadata scrubber and privacy inspection toolkit. Cleans EXIF, GPS, camera serials, PDF metadata, Microsoft Office doc revisions, and link tracking parameters locally.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Photo EXIF & GPS metadata scrubber for JPG, PNG, WEBP",
+            "PDF author, creation timestamp, and software signature cleaner",
+            "Office document (DOCX, XLSX, PPTX) revision history and personal info stripper",
+            "URL tracking parameter cleaner (strips UTM, fbclid, gclid, and referral tokens)",
+            "Video MP4/MOV atom metadata inspector and GPS scrubber",
+            "Audio MP3 ID3 tag cleaner",
+            "Cryptographically secure CSPRNG password & Diceware passphrase generator",
+            "Comprehensive multi-asset Privacy Checkup exposure audit"
+          ]
+        },
+        {
+          "@type": "ItemList",
+          "@id": "https://privacykit.in/#tools-list",
+          "name": "PrivacyKit Digital Privacy Tools Catalog",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Photo Privacy Inspector & Cleaner",
+              "description": "Inspect and strip GPS coordinates, camera specs, device serials, and timestamps from photos before sharing.",
+              "url": "https://privacykit.in/tools/exif-remover"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "PDF Metadata Cleaner",
+              "description": "Remove author names, company info, software signatures, and edit history from PDF documents.",
+              "url": "https://privacykit.in/tools/pdf-metadata-cleaner"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Document Metadata Cleaner",
+              "description": "Scrub revision history, template paths, and personal identity traces from Word, Excel, and PowerPoint files.",
+              "url": "https://privacykit.in/tools/doc-metadata-cleaner"
+            },
+            {
+              "@type": "ListItem",
+              "position": 4,
+              "name": "URL Privacy Cleaner",
+              "description": "Remove UTM tags, click identifiers (fbclid, gclid, msclkid), and tracker payloads from web addresses.",
+              "url": "https://privacykit.in/tools/url-privacy-cleaner"
+            },
+            {
+              "@type": "ListItem",
+              "position": 5,
+              "name": "Video Metadata Cleaner",
+              "description": "Inspect and strip location data, device markers, and creation specs from MP4 and MOV video files.",
+              "url": "https://privacykit.in/tools/video-metadata-cleaner"
+            },
+            {
+              "@type": "ListItem",
+              "position": 6,
+              "name": "Audio Metadata Cleaner",
+              "description": "Clean ID3 tags, artist info, album art, and recording signatures from MP3 and audio tracks.",
+              "url": "https://privacykit.in/tools/audio-metadata-cleaner"
+            },
+            {
+              "@type": "ListItem",
+              "position": 7,
+              "name": "Password & Passphrase Generator",
+              "description": "Generate cryptographically secure passwords, Diceware passphrases, and private aliases in your browser.",
+              "url": "https://privacykit.in/tools/password-generator"
+            },
+            {
+              "@type": "ListItem",
+              "position": 8,
+              "name": "Privacy Checkup Engine",
+              "description": "Perform an all-in-one multi-asset audit to evaluate what your files, links, and documents expose.",
+              "url": "https://privacykit.in/privacy-checkup"
+            }
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="bg-[#EBF0F5] dark:bg-[#0B0F19] text-[#0F172A] dark:text-[#E2E8F0] font-sans antialiased selection:bg-indigo-500/20 dark:selection:bg-indigo-500/35 selection:text-indigo-900 dark:selection:text-indigo-200 min-h-screen w-full transition-colors duration-200 m-0 p-0">
     <div id="root" class="w-full"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

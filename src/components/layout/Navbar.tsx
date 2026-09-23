@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div 
         className={`pointer-events-auto rounded-full py-2.5 px-3.5 sm:px-6 clay-nav-dock mx-auto max-w-5xl flex items-center justify-between transition-all duration-300 ${
           isScrolled
-            ? 'mt-2 sm:mt-2.5 shadow-2xl backdrop-blur-3xl bg-white/45 dark:bg-[#0D1322]/50 border-white/80 dark:border-white/15'
+            ? 'mt-2 sm:mt-2.5 shadow-xl backdrop-blur-2xl bg-white/28 dark:bg-[#0D1322]/35 border-white/60 dark:border-white/12'
             : 'mt-3 sm:mt-4'
         }`}
       >
