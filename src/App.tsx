@@ -349,7 +349,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#EBF0F5] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-950 dark:selection:text-indigo-200 relative transition-colors duration-150">
+    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#EBF0F5] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-950 dark:selection:text-indigo-200 relative transition-colors duration-150">
       {/* Dynamic Route Progress Indicator */}
       <PageProgressBar currentPath={currentPath} />
 
@@ -367,7 +367,7 @@ export default function App() {
       />
 
       {/* Main Content View with Seamless Transitions */}
-      <main className="flex-1 w-full relative z-10 flex flex-col">
+      <main className="flex-1 w-full relative z-10 flex flex-col pt-16 sm:pt-20">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentPath}

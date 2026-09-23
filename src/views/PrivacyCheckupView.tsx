@@ -508,21 +508,21 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
       {report && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top Score Bar */}
-          <div className="clay-card p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
+          <div className="clay-card p-5 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 w-full overflow-hidden">
+            <div className="flex items-center gap-4 sm:gap-6 w-full md:w-auto min-w-0">
               <ScoreMeter
                 score={report.isCleaned && report.cleanedScore ? report.cleanedScore : report.originalScore}
-                size="lg"
+                size="md"
                 showLabel={true}
               />
-              <div className="space-y-1">
-                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <div className="space-y-1 min-w-0 flex-1">
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                   Audit Target
                 </span>
-                <h2 className="text-lg font-extrabold text-slate-900 dark:text-white max-w-sm truncate">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white truncate block" title={report.targetName}>
                   {report.targetName}
                 </h2>
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1">
                   <span className="text-xs px-2.5 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono font-medium">
                     {report.type.toUpperCase()}
                   </span>
@@ -541,7 +541,7 @@ export const PrivacyCheckupView: React.FC<PrivacyCheckupViewProps> = ({ onNaviga
             </div>
 
             {/* Quick Actions */}
-            <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center justify-between md:justify-end gap-2 sm:gap-2.5 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-200/80 dark:border-slate-800">
               {!report.isCleaned && report.type !== 'url' && (
                 <button
                   type="button"

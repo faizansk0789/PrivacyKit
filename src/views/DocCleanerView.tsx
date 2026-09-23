@@ -242,17 +242,17 @@ export const DocCleanerView: React.FC<DocCleanerViewProps> = ({ onNavigate }) =>
       {mode === 'single' && docData && (
         <div className="space-y-8 animate-fadeIn">
           {/* Top Bar */}
-          <div className="clay-card p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl clay-icon-pod text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <FileSpreadsheet className="w-7 h-7" />
+          <div className="clay-card p-5 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 w-full overflow-hidden">
+            <div className="flex items-center gap-4 sm:gap-5 w-full md:w-auto min-w-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl clay-icon-pod text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <FileSpreadsheet className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
-              <div className="space-y-1">
-                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Target Document</span>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white max-w-xs sm:max-w-md truncate">
+              <div className="space-y-1 min-w-0 flex-1">
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Target Document</span>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate block" title={docData.fileName}>
                   {docData.fileName}
                 </h2>
-                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <span>{(docData.fileSize / 1024).toFixed(1)} KB</span>
                   <span>•</span>
                   <span className="font-mono uppercase">{docData.fileType}</span>
@@ -260,7 +260,7 @@ export const DocCleanerView: React.FC<DocCleanerViewProps> = ({ onNavigate }) =>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between md:justify-end gap-3 sm:gap-4 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-200/80 dark:border-slate-800">
               <ScoreMeter score={isDone ? 100 : docData.privacyScore} size="md" />
               <button
                 type="button"

@@ -76,14 +76,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full px-3 sm:px-6 pointer-events-none transition-all duration-300">
-      {/* Floating Translucent Frosted Glass Pill Dock */}
+    <header className="fixed top-0 left-0 right-0 z-50 w-full px-3 sm:px-6 pointer-events-none">
+      {/* Floating Translucent Frosted Glass Pill Dock - stays still at its place */}
       <div 
-        className={`pointer-events-auto rounded-full py-2.5 px-3.5 sm:px-6 clay-nav-dock mx-auto max-w-5xl flex items-center justify-between transition-all duration-300 ${
-          isScrolled
-            ? 'mt-2 sm:mt-2.5 shadow-xl backdrop-blur-2xl bg-white/28 dark:bg-[#0D1322]/35 border-white/60 dark:border-white/12'
-            : 'mt-3 sm:mt-4'
-        }`}
+        className="pointer-events-auto rounded-full py-2.5 px-3.5 sm:px-6 clay-nav-dock mx-auto max-w-5xl flex items-center justify-between mt-3 sm:mt-4 shadow-xl backdrop-blur-2xl bg-white/28 dark:bg-[#0D1322]/35 border-white/60 dark:border-white/12"
       >
         {/* Left: Brand Logo */}
         <button

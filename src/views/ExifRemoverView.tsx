@@ -277,35 +277,35 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
       {mode === 'single' && exifData && (
         <div className="space-y-8 animate-fadeIn">
           {/* File Card */}
-          <div className="clay-card p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
+          <div className="clay-card p-5 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6 w-full overflow-hidden">
+            <div className="flex items-center gap-4 sm:gap-5 w-full md:w-auto min-w-0">
               {exifData.previewUrl && (
                 <img
                   src={exifData.previewUrl}
                   alt="Preview"
                   referrerPolicy="no-referrer"
-                  className="w-20 h-20 rounded-2xl object-cover border border-slate-300 dark:border-slate-700/80 shadow-md shrink-0"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-300 dark:border-slate-700/80 shadow-md shrink-0"
                 />
               )}
-              <div className="space-y-1">
-                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Selected Photo</span>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white max-w-xs sm:max-w-md truncate">
+              <div className="space-y-1 min-w-0 flex-1">
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Selected Photo</span>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate block" title={exifData.fileName}>
                   {exifData.fileName}
                 </h2>
-                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <span>{(exifData.fileSize / 1024).toFixed(1)} KB</span>
                   <span>•</span>
-                  <span>{exifData.technical?.resolution || 'Original Resolution'}</span>
+                  <span className="truncate">{exifData.technical?.resolution || 'Original Resolution'}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between md:justify-end gap-3 sm:gap-4 w-full md:w-auto pt-2 md:pt-0 border-t md:border-t-0 border-slate-200/80 dark:border-slate-800">
               <ScoreMeter score={isDone ? 100 : exifData.privacyScore} size="md" />
               <button
                 type="button"
                 onClick={reset}
-                className="clay-circle-btn w-9 h-9 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                className="clay-circle-btn w-9 h-9 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer shrink-0"
                 title="Select another photo"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -315,15 +315,15 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
 
           {/* Navigation Tabs */}
           {!isDone && (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 w-full">
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 max-w-full">
                 <button
                   onClick={() => {
                     playPop();
                     setActiveTab('inspector');
                   }}
                   onMouseEnter={playHover}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  className={`px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                     activeTab === 'inspector'
                       ? 'clay-pill-active text-white'
                       : 'clay-pill-inactive text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -338,7 +338,7 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
                     setActiveTab('cleaner');
                   }}
                   onMouseEnter={playHover}
-                  className={`relative px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  className={`relative px-3.5 sm:px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
                     activeTab === 'cleaner'
                       ? 'clay-pill-active text-white'
                       : needsCleaning
@@ -355,7 +355,7 @@ export const ExifRemoverView: React.FC<ExifRemoverViewProps> = ({ onNavigate }) 
               </div>
 
               {/* Status pill showing if safe or requires metadata removal */}
-              <div>
+              <div className="flex-shrink-0">
                 {!needsCleaning ? (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold shadow-xs">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />

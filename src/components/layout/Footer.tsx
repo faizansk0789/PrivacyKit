@@ -35,7 +35,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenFeedback }) =>
                 <Shield className="w-5 h-5" />
               </div>
               <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                PrivacyKit<span className="text-indigo-600 dark:text-indigo-400 font-mono text-sm">.to</span>
+                PrivacyKit<span className="text-indigo-600 dark:text-indigo-400 font-mono text-sm">.in</span>
               </span>
             </button>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
